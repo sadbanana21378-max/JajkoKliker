@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Jajko Clicker Lobby</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: url('https://cdn.pixabay.com/photo/2019/08/11/00/46/waterfall-4397970_1280.jpg') no-repeat center center fixed; background-size: cover; text-align: center; color: #fff; }
+    .button { padding: 15px 30px; margin: 10px; cursor: pointer; background: rgba(0,0,0,0.6); border: 2px solid #000; border-radius: 12px; font-size: 1.2em; color: #fff; }
+    #egg { width: 300px; cursor: pointer; border: 2px solid #000; }
+    .box { margin: 20px auto; padding: 30px; background: rgba(0,0,0,0.6); width: 500px; border-radius: 12px; font-size: 1.2em; color: #fff; border: 2px solid #000; }
+    img { width: 120px; border: 2px solid #000; }
+    #dropAnimWrapper { width: 500px; height: 150px; overflow: hidden; border: 3px solid #000; margin: 20px auto; display: none; background: rgba(0,0,0,0.6); }
+    #dropAnim { display: flex; width: max-content; animation: slide 2s linear; }
+    #dropAnim img { width: 120px; margin: 10px; border: 2px solid #000; }
+    @keyframes slide { from { transform: translateX(0); } to { transform: translateX(-900px); } }
+    #bigDrop img { width: 300px; border: 4px solid #000; border-radius: 12px; }
+    #bigDrop p { font-weight: bold; margin-top: 10px; font-size: 1.2em; color: #fff; }
+    #lobbyChicken { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; }
+    #lobbyChicken img { width: 150px; border: 2px solid #000; border-radius: 12px; }
+    #userInfo { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 15px 25px; border-radius: 8px; font-size: 1.2em; text-align: left; color: #fff; border: 2px solid #000; }
+    #generalInfo { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 10px 15px; border-radius: 8px; font-size: 1.2em; text-align: left; color: #fff; border: 2px solid #000; }
+    #creditsOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); color: #fff; display: none; justify-content: center; align-items: center; flex-direction: column; font-size: 1.5em; }
+    #creditsOverlay button { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div id="userInfo">
+    Nick: <span id="userNick">Gracz</span> | LVL: <span id="userLvl">1</span> | Kliknięcia: <span id="clicks">0</span> | Kasa: $<span id="money">0</span>
+    <br>
+    <button class="button" onclick="toggleMusic()">Włącz/Wyłącz muzykę</button>
+    <button class="button" onclick="showCredits()">Credits</button>
+  </div>
+
+  <div id="generalInfo">
+    Ogólne kliknięcia: <span id="totalClicks">0</span> | Ogólne wydane: $<span id="totalSpent">0</span>
+  </div>
+
+  <audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop autoplay></audio>
+
+  <div id="nicknameSetup" class="box">
+    <h2>Ustaw swój nick</h2>
+    <input type="text" id="nickInput" placeholder="Wpisz nick" style="font-size:1.2em; padding:5px;" />
+    <button class="button" onclick="setNick()">Zapisz nick</button>
+  </div>
+
+  <div>
+    <button class="button" onclick="showClicker()">Clicker</button>
+    <button class="button" onclick="showShop()">Sklep</button>
+    <button class="button" onclick="showIndex()">Indeks</button>
+    <button class="button" onclick="showMarket()">Market</button>
+    <button class="button" onclick="showChallenges()">Wyzwania</button>
+    <button class="button" onclick="returnToLobby()">Powrót do Lobby</button>
+  </div>
+
+  <div id="clickerSection" style="display:none">
+    <img id="egg" src="https://cdn.pixabay.com/photo/2017/06/19/23/34/egg-2421236_1280.jpg" />
+    <div id="dropAnimWrapper"><div id="dropAnim"></div></div>
+    <div id="bigDrop"></div>
+    <button class="button" onclick="buyBoost()">Kup Boost 2x kliknięcia - $2000</button>
+  </div>
+
+  <div id="shopSection" class="box" style="display:none">
+    <h2>Sklep – Skórki do jajka</h2>
+    <p>Kupujesz tylko skiny, NIE kury.</p>
+    <button onclick="buySkin('https://cdn.pixabay.com/photo/2017/06/19/23/34/egg-2421236_1280.jpg', 0)">Skin podstawowy (free)</button><br>
+    <button onclick="buySkin('https://cdn.pixabay.com/photo/2013/07/13/13/42/pirate-161434_1280.png', 100)">Egg Skin Pirate – $100</button><br>
+    <button onclick="buySkin('https://cdn.pixabay.com/photo/2021/03/18/20/18/egg-6105787_1280.jpg', 200)">Egg Skin 2 – $200</button><br>
+    <button onclick="buySkin('https://cdn.pixabay.com/photo/2013/02/16/16/34/egg-82296_1280.jpg', 300)">Egg Skin 3 – $300</button><br>
+    <button onclick="buySkin('https://cdn.pixabay.com/photo/2016/09/03/21/47/kids-chocolate-1642807_1280.jpg', 500)">Egg Skin 4 – $500</button>
+  </div>
+
+  <div id="indexSection" class="box" style="display:none">
+    <h2>Indeks kur</h2>
+    <ul id="chickenList"></ul>
+  </div>
+
+  <div id="marketSection" class="box" style="display:none">
+    <h2>Market – Sprzedawaj swoje kury</h2>
+    <ul id="marketList"></ul>
+  </div>
+
+  <div id="challengesSection" class="box" style="display:none">
+    <h2>Wyzwania</h2>
+    <button onclick="claimChallenge()">Kliknij 1000 razy – odbierz $100</button>
+  </div>
+
+  <div id="lobbyChicken"></div>
+
+  <div id="creditsOverlay">
+    <div>Pomysłodawcy:<br>IG: @calujeloczki @mlody_kasza<br>TT: @fleetari</div>
+    <button class="button" onclick="hideCredits()">Wyjście</button>
+  </div>
+
+  <script>
+    let clicks = 0;
+    let totalClicks = 0;
+    let money = 0;
+    let totalSpent = 0;
+    let inventory = [];
+    let boost = false;
+    let userNick = 'Gracz';
+    let userLvl = 1;
+
+    const music = document.getElementById('bgMusic');
+    function toggleMusic() { if(music.paused) music.play(); else music.pause(); }
+
+    const dropTable = [
+      { name: "Kura", price:100, color:"gray", img: "https://cdn.pixabay.com/photo/2022/01/19/18/58/chicken-6950747_1280.jpg", desc: "Mała, ale wesoła!" },
+      { name: "Howl", price:200, color:"blue", img: "https://cdn.pixabay.com/photo/2016/11/29/05/32/rooster-1867562_1280.jpg", desc: "Kogut jak z koncertu rockowego." },
+      { name: "Fade", price:300, color:"pink", img: "https://cdn.pixabay.com/photo/2020/03/08/17/53/chicken-4913253_1280.jpg", desc: "Modna i różowa." },
+      { name: "Babo", price:100, color:"gray", img: "https://pixabay.com/images/download/bird-3136017_1920.jpg", desc: "Zawsze w humorze." },
+      { name: "Bravo", price:200, color:"blue", img: "https://cdn.pixabay.com/photo/2020/05/22/12/16/chicken-drumsticks-5205207_1280.jpg", desc: "Pstryk! Jest show!" },
+      { name: "Piodbyt", price:500, color:"red", img: "https://cdn.pixabay.com/photo/2021/01/03/07/34/chicken-nuggets-5883662_1280.png", desc: "Ten nugget Cię zachwyci." },
+      { name: "Żyrafa", price:1000, color:"gold", img: "https://cdn.pixabay.com/photo/2021/08/28/14/38/carousel-giraffe-6581119_1280.png", desc: "Długa i wesoła!" },
+      { name: "Fioletowa 1", price:300, color:"purple", img: "https://cdn.pixabay.com/photo/2014/03/05/01/20/chicken-breast-279847_1280.jpg", desc: "Fioletowa i fajna." },
+      { name: "Fioletowa 2", price:300, color:"purple", img: "https://cdn.pixabay.com/photo/2020/05/22/12/16/chicken-drumsticks-5205207_1280.jpg", desc: "Niepowtarzalna fioletowa." }
+    ];
+
+    function updateMoneyClicks() { 
+      document.getElementById("money").innerText = money; 
+      document.getElementById("clicks").innerText = clicks; 
+      document.getElementById("totalClicks").innerText = totalClicks;
+      document.getElementById("totalSpent").innerText = totalSpent;
+      document.getElementById("userLvl").innerText = userLvl;
+    }
+
+    function setNick() { const input = document.getElementById('nickInput').value; if(input) { userNick = input; document.getElementById('userNick').innerText = userNick; document.getElementById('nicknameSetup').style.display = 'none'; } }
+
+    function showClicker() { hideAll(); document.getElementById("clickerSection").style.display = 'block'; }
+    function showShop() { hideAll(); document.getElementById("shopSection").style.display = 'block'; }
+    function showIndex() { hideAll(); document.getElementById("indexSection").style.display = 'block'; }
+    function showMarket() { hideAll(); updateMarket(); document.getElementById("marketSection").style.display = 'block'; }
+    function showChallenges() { hideAll(); document.getElementById('challengesSection').style.display='block'; }
+    function returnToLobby() { hideAll(); document.getElementById('nicknameSetup').style.display='block'; }
+    function hideAll() { document.getElementById("clickerSection").style.display='none'; document.getElementById("shopSection").style.display='none'; document.getElementById("indexSection").style.display='none'; document.getElementById("marketSection").style.display='none'; document.getElementById('challengesSection').style.display='none'; }
+
+    document.getElementById("egg").addEventListener("click", () => { clicks += boost ? 2 : 1; totalClicks++; updateMoneyClicks(); if (clicks >= 100) { clicks = 0; updateMoneyClicks(); animateDrop(); } });
+
+    function animateDrop() { const animWrap = document.getElementById("dropAnimWrapper"); const anim = document.getElementById("dropAnim"); animWrap.style.display = "block"; anim.innerHTML = ""; for (let i = 0; i < 10; i++) { const d = dropTable[Math.floor(Math.random() * dropTable.length)]; anim.innerHTML += `<img src='${d.img}'>`; } setTimeout(() => { animWrap.style.display = "none"; dropChicken(); }, 2000); }
+
+    function dropChicken() {
+      const drop = dropTable[Math.floor(Math.random() * dropTable.length)];
+      inventory.push(drop);
+      const bigDropDiv = document.getElementById("bigDrop");
+      bigDropDiv.innerHTML = `<p>🎉 Gratulacje! Wydropiłeś: ${drop.name}</p><img src='${drop.img}'><p>${drop.desc}</p>`;
+      updateIndex();
+      setTimeout(() => { bigDropDiv.innerHTML = ''; }, 5000);
+    }
+
+    function buySkin(url, price) { if (money < price) return alert("Za mało kasy!"); money -= price; totalSpent += price; updateMoneyClicks(); document.getElementById("egg").src = url; }
+    function buyBoost() { if (money < 2000) return alert("Za mało kasy!"); boost = true; money -= 2000; totalSpent += 2000; updateMoneyClicks(); alert("Boost aktywny! Każdy klik = 2 kliknięcia."); }
+
+    function updateIndex() { const list = document.getElementById("chickenList"); list.innerHTML = ''; inventory.forEach(drop => { const li = document.createElement("li"); li.innerHTML = `<img style='border:4px solid ${drop.color}' src='${drop.img}'> <b style='color:${drop.color}'>${drop.name}</b> - ${drop.desc} <button onclick='setLobbyChicken("${drop.name}")'>Ustaw w lobby</button>`; list.appendChild(li); }); }
+
+    function setLobbyChicken(name) { const chicken = inventory.find(c => c.name === name); if (!chicken) return; const lobbyDiv = document.getElementById("lobbyChicken"); lobbyDiv.innerHTML = ''; const img = document.createElement("img"); img.src = chicken.img; lobbyDiv.appendChild(img); }
+
+    function updateMarket() {
+      const market = document.getElementById('marketList');
+      market.innerHTML = '';
+      inventory.forEach((chicken, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<img style='border:4px solid ${chicken.color}' src='${chicken.img}'> <b>${chicken.name}</b> - Sprzedaj za $${chicken.price} <button onclick='sellChicken(${index})'>Sprzedaj</button>`;
+        market.appendChild(li);
+      });
+    }
+
+    function sellChicken(index) {
+      money += inventory[index].price;
+      inventory.splice(index, 1);
+      updateMoneyClicks();
+      updateMarket();
+      updateIndex();
+      document.getElementById("lobbyChicken").innerHTML = '';
+    }
+
+    function claimChallenge() { if(clicks >= 1000){ money += 100; totalSpent += 100; updateMoneyClicks(); alert("Wyzwanie ukończone! Otrzymujesz $100"); } else alert("Nie ukończono wyzwania - kliknij 1000 razy!"); }
+
+    function showCredits() { document.getElementById('creditsOverlay').style.display = 'flex'; }
+    function hideCredits() { document.getElementById('creditsOverlay').style.display = 'none'; }
+  </script>
+</body>
+</html>
